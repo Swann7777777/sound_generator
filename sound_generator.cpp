@@ -81,8 +81,6 @@ uint32_t main() {
 
 
 
-
-
 	std::ofstream file("sound.wav", std::ios_base::binary);
 
 
