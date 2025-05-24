@@ -2,6 +2,9 @@
 #include <fstream>
 #include <vector>
 #include <numbers>
+#include <random>
+#include <sstream>
+#include <map>
 
 
 struct header {
@@ -22,6 +25,73 @@ struct header {
 
 
 
+int pure_sine_wave(int duration, header header_data, std::vector<uint16_t> &data) {
+
+
+	int frequency = 440;
+	float amplitude = 0.5;
+
+	std::string input;
+
+
+	std::cout << "Frequency (440): ";
+
+	std::getline(std::cin, input);
+
+	if (!input.empty()) {
+		std::istringstream iss(input);
+		iss >> frequency;
+	}
+
+
+	std::cout << "Amplitude (0.5): ";
+
+	std::getline(std::cin, input);
+
+	if (!input.empty()) {
+		std::istringstream iss(input);
+		iss >> amplitude;
+	}
+
+
+
+
+
+	float amplitude_factor = amplitude * 32768;
+
+	float pipi = 2 * std::numbers::pi;
+
+
+	for (int i = 0; i < duration * header_data.sampleRate; i++) {
+
+		double harmony = 0;
+
+
+		harmony = sin(pipi * frequency * i / header_data.sampleRate);
+
+		uint16_t sample = static_cast<uint16_t>(amplitude_factor * harmony);
+
+
+
+		for (int j = 0; j < header_data.numChannels; j++) {
+
+			data[i * header_data.numChannels + j] = sample;
+		}
+	}
+
+	return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -29,25 +99,57 @@ struct header {
 
 uint32_t main() {
 
-	float duration;
-	float frequency;
-	float amplitude;
+
+	std::random_device rd;
+	std::mt19937 gen(rd());
+
+	std::uniform_int_distribution f_dist(0, 1);
+	std::uniform_int_distribution a_dist(0, 1);
 
 
-	std::cout << "Duration : ";
-
-	std::cin >> duration;
 
 
 
-	std::cout << "Frequency : ";
+	int experiment_index = 0;
+	int duration = 10;
 
-	std::cin >> frequency;
+	std::string input;
 
 
-	std::cout << "Amplitude : ";
 
-	std::cin >> amplitude;
+
+
+
+	std::cout << "Experiments menu :\n\n";
+
+	std::cout << "0 : Pure sine wave\n";
+	std::cout << "1 : White noise\n";
+	std::cout << "2 : Fifth\n";
+	std::cout << "3 : Octave\n";
+	std::cout << "4 : Harmonics\n";
+
+
+
+
+
+
+	std::cout << "Experiment (0): ";
+
+	std::getline(std::cin, input);
+	if (!input.empty()) {
+		std::istringstream iss(input);
+		iss >> experiment_index;
+	}
+
+	std::cout << "Duration (10): ";
+
+	std::getline(std::cin, input);
+	if (!input.empty()) {
+		std::istringstream iss(input);
+		iss >> duration;
+	}
+
+
 
 
 
@@ -69,14 +171,29 @@ uint32_t main() {
 	header_data.chunkSize = 36 + header_data.subChunk2Size;
 
 
+
+
+
+
+
+
 	std::vector<uint16_t> data(static_cast<size_t>(duration * header_data.sampleRate * header_data.numChannels));
 
-	for (int i = 0; i < duration * header_data.sampleRate; i++) {
-		uint16_t sample = static_cast<uint16_t>(amplitude * 32767 * sin(2 * std::numbers::pi * frequency * i / header_data.sampleRate));
-		for (int j = 0; j < header_data.numChannels; j++) {
-			data[i * header_data.numChannels + j] = sample;
-		}
-	}
+
+
+
+
+
+
+	std::map<int, int> experiments = {
+		{0, pure_sine_wave(duration, header_data, data)}
+	};
+
+
+
+
+
+
 
 
 
